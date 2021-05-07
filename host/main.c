@@ -43,6 +43,13 @@ int main(int argc, char* argv[])
 	TEEC_Operation op;
 	TEEC_UUID uuid = TA_TEEencrypt_UUID;
 	uint32_t err_origin;
+	FILE* plainfile;
+	FILE* cipherfile;
+	char path[64] = "./root/";
+	char plaintext[64];
+	char ciphertext[64];
+	char key[64];
+	int len = 64;
 
 	res = TEEC_InitializeContext(NULL, &ctx);
 
@@ -51,17 +58,31 @@ int main(int argc, char* argv[])
 
 	memset(&op, 0, sizeof(op));
 
-	op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INOUT, TEEC_NONE,
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_OUTPUT, TEEC_NONE,
 					 TEEC_NONE, TEEC_NONE);
-	op.params[0].value.a = argv[2];
+	op.params[0].tmpref.buffer = plaintext;
+	op.params[0].tmpref.size = len;
 
 	if(strcmp(argv[1], "-e") == 0)
 	{
+		strcat(path, argv[2]);
+		printf("%s\n", path);
+		plainfile = fopen(path, "r");
+		fgets(plaintext, 64, plainfile);
+		printf("%s\n", plaintext);
+		memcpy(op.params[0].tmpref.buffer, plaintext, len);
 		res = TEEC_InvokeCommand(&sess, TA_TEEencrypt_CMD_ENC_VALUE, &op,
 				 	 &err_origin);
 	}
 	else if(strcmp(argv[1], "-d") == 0)
 	{
+		strcat(path, argv[2]);
+		printf("%s\n", path);
+		cipherfile = fopen(path, "r");
+		fgets(ciphertext, 64, cipherfile);
+		fgets(key, 64, cipherfile);
+		printf("%s\n", ciphertext);
+		memcpy(op.params[0].tmpref.buffer, ciphertext, len);
 		res = TEEC_InvokeCommand(&sess, TA_TEEencrypt_CMD_DEC_VALUE, &op,
 					 &err_origin);
 	}
