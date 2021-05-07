@@ -35,7 +35,7 @@
 /* To the the UUID (found the the TA's h-file(s)) */
 #include <TEEencrypt_ta.h>
 
-int main(void)
+int main(int argc, char* argv[])
 {
 	TEEC_Result res;
 	TEEC_Context ctx;
@@ -53,17 +53,24 @@ int main(void)
 
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INOUT, TEEC_NONE,
 					 TEEC_NONE, TEEC_NONE);
-	op.params[0].value.a = 42;
+	op.params[0].value.a = argv[2];
 
-	printf("Invoking TA to increment %d\n", op.params[0].value.a);
-	res = TEEC_InvokeCommand(&sess, TA_TEEencrypt_CMD_ENC_VALUE, &op,
-				 &err_origin);
-	res = TEEC_InvokeCommand(&sess, TA_TEEencrypt_CMD_DEC_VALUE, &op,
-				 &err_origin);
+	if(strcmp(argv[1], "-e") == 0)
+	{
+		res = TEEC_InvokeCommand(&sess, TA_TEEencrypt_CMD_ENC_VALUE, &op,
+				 	 &err_origin);
+	}
+	else if(strcmp(argv[1], "-d") == 0)
+	{
+		res = TEEC_InvokeCommand(&sess, TA_TEEencrypt_CMD_DEC_VALUE, &op,
+					 &err_origin);
+	}
+/*
 	res = TEEC_InvokeCommand(&sess, TA_TEEencrypt_CMD_GET_RANDOMKEY, &op,
 				 &err_origin);
 	res = TEEC_InvokeCommand(&sess, TA_TEEencrypt_CMD_ENC_RANDOMKEY, &op,
 				 &err_origin);
+*/
 
 	TEEC_CloseSession(&sess);
 
