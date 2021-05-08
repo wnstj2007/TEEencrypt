@@ -58,45 +58,45 @@ int main(int argc, char* argv[])
 	memset(&op, 0, sizeof(op));
 
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT, TEEC_MEMREF_TEMP_OUTPUT,
-					 TEEC_NONE, TEEC_NONE);
+					 TEEC_MEMREF_TEMP_INPUT, TEEC_MEMREF_TEMP_OUTPUT);
 	op.params[0].tmpref.buffer = plaintext;
 	op.params[0].tmpref.size = len;
 	op.params[1].tmpref.buffer = ciphertext;
 	op.params[1].tmpref.size = len;
+	op.params[2].tmpref.buffer = key;
+	op.params[2].tmpref.size = len;
+	op.params[3].tmpref.buffer = key;
+	op.params[3].tmpref.size = len;
 
+	// encrypt
 	if(strcmp(argv[1], "-e") == 0)
 	{
 		plainfile = fopen(argv[2], "r");
 		fgets(plaintext, 64, plainfile);
-		printf("%s", plaintext);
 		memcpy(op.params[0].tmpref.buffer, plaintext, len);
 		res = TEEC_InvokeCommand(&sess, TA_TEEencrypt_CMD_ENC_VALUE, &op,
 				 	 &err_origin);
-		printf("encrypted: %s", (char *) op.params[1].tmpref.buffer);
 		cipherfile = fopen("cipher.txt", "w");
 		fprintf(cipherfile, "%s", (char *) op.params[1].tmpref.buffer);
-		//fprintf(cipherfile, "%s", key);
+		fprintf(cipherfile, "%s", key);
+		fclose(plainfile);
+		fclose(cipherfile);
 	}
+	// decrypt
 	else if(strcmp(argv[1], "-d") == 0)
 	{
 		cipherfile = fopen(argv[2], "r");
 		fgets(ciphertext, 64, cipherfile);
 		fgets(key, 64, cipherfile);
-		printf("%s\n", ciphertext);
 		memcpy(op.params[0].tmpref.buffer, ciphertext, len);
+		memcpy(op.params[2].tmpref.buffer, key, len);
 		res = TEEC_InvokeCommand(&sess, TA_TEEencrypt_CMD_DEC_VALUE, &op,
 					 &err_origin);
-
-		printf("encrypted: %s", (char *) op.params[1].tmpref.buffer);
 		plainfile = fopen("plain.txt", "w");
 		fprintf(plainfile, "%s", (char *) op.params[1].tmpref.buffer);
+		fclose(plainfile);
+		fclose(cipherfile);
 	}
-/*
-	res = TEEC_InvokeCommand(&sess, TA_TEEencrypt_CMD_GET_RANDOMKEY, &op,
-				 &err_origin);
-	res = TEEC_InvokeCommand(&sess, TA_TEEencrypt_CMD_ENC_RANDOMKEY, &op,
-				 &err_origin);
-*/
 
 	TEEC_CloseSession(&sess);
 
