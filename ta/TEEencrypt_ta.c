@@ -93,6 +93,10 @@ void TA_CloseSessionEntryPoint(void __maybe_unused *sess_ctx)
 static TEE_Result enc_value(uint32_t param_types,
 	TEE_Param params[4])
 {
+	uint32_t exp_param_types = TEE_PARAM_TYPES(TEE_PARAM_TYPE_MEMREF_INPUT,
+						   TEE_PARAM_TYPE_MEMREF_OUTPUT,
+						   TEE_PARAM_TYPE_NONE,
+						   TEE_PARAM_TYPE_NONE);
 	char * in = (char *)params[0].memref.buffer;
 	int in_len = strlen (params[0].memref.buffer);
 	char encrypted [64]={0,};
@@ -113,8 +117,8 @@ static TEE_Result enc_value(uint32_t param_types,
 			encrypted[i] += 'A';
 		}
 	}
-	DMSG ("Ciphertext :  %s", encrypted);
-	memcpy(in, encrypted, in_len);
+	memcpy(params[1].memref.buffer, encrypted, in_len);
+	params[1].memref.size = in_len;
 
 	return TEE_SUCCESS;
 }
