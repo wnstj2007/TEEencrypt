@@ -117,6 +117,7 @@ static TEE_Result enc_value(uint32_t param_types,
 			encrypted[i] += 'A';
 		}
 	}
+
 	memcpy(params[1].memref.buffer, encrypted, in_len);
 	params[1].memref.size = in_len;
 
@@ -126,6 +127,10 @@ static TEE_Result enc_value(uint32_t param_types,
 static TEE_Result dec_value(uint32_t param_types,
 	TEE_Param params[4])
 {
+	uint32_t exp_param_types = TEE_PARAM_TYPES(TEE_PARAM_TYPE_MEMREF_INPUT,
+						   TEE_PARAM_TYPE_MEMREF_OUTPUT,
+						   TEE_PARAM_TYPE_NONE,
+						   TEE_PARAM_TYPE_NONE);
 	char * in = (char *)params[0].memref.buffer;
 	int in_len = strlen (params[0].memref.buffer);
 	char decrypted [64]={0,};
@@ -148,8 +153,8 @@ static TEE_Result dec_value(uint32_t param_types,
 			decrypted[i] += 'A';
 		}
 	}
-	DMSG ("Plaintext :  %s", decrypted);
-	memcpy(in, decrypted, in_len);
+	memcpy(params[1].memref.buffer, decrypted, in_len);
+	params[1].memref.size = in_len;
 
 	return TEE_SUCCESS;
 }
